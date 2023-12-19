@@ -17,8 +17,8 @@ class SystolicArrayCell:
         self.activation_out = 0
 
         #stored_value
-        self.partial_sum = None
-        self.activation = None
+        self.partial_sum = 0
+        self.activation = 0
 
     def set_weight(self,weight):
         self.weight = weight
@@ -46,11 +46,11 @@ class SystolicArray:
     def connect(self):
         for pos_x in range(self.array_size):
             for pos_y in range(self.array_size):
-                if pos_x is 0:
+                if pos_x == 0:
                     self.cell_array[pos_x][pos_y].in_activation = self.input[pos_y]
                 else:
                     self.cell_array[pos_x][pos_y].in_activation = self.cell_array[pos_x - 1][pos_y].activation_out
-                if pos_y is 0:
+                if pos_y == 0:
                     self.cell_array[pos_x][pos_y].in_partial_sum = 0
                 else:
                     self.cell_array[pos_x][pos_y].in_partial_sum = self.cell_array[pos_x][pos_y - 1].partial_sum_out
@@ -66,13 +66,62 @@ class SystolicArray:
             for _ in range(row_num):
                 self.input[row_num].append(0)
 
-        # And the activations must be transposed
+        # Activations must be transposed
         for row_num in range(self.array_size):
             col = [activations[x][row_num] for x in range(self.array_size)]
             for activation in col:
                 self.input[row_num].append(activation)
 
+    def read(self):
+        for row in self.cell_array:
+            for cell in row:
+                cell.read()
 
+    def compute(self):
+        for row in self.cell_array:
+            for cell in row:
+                cell.compute()
+        #output
+        for col in range(self.array_size):
+            self.output[col].append(self.cell_array[-1][col].partial_sum_out)
+
+    def cycle(self):
+        for row in range(self.array_size):
+            for col in range(self.array_size):
+                print(self.cell_array[row][col].in_activation)
+
+
+        self.read()
+        self.compute()
+    
+    def run(self,input_size):
+        self.connect()
+        for _ in range(input_size*self.array_size-(input_size-1)):
+            self.cycle()
+
+        return self.output
+
+myArray = SystolicArray(3)
+
+activations = [
+    [1, 2, 3], 
+    [4, 5, 6], 
+    [7, 8, 9]
+]
+myArray.fill_activations(activations)
+
+weights = [
+    [10, 20, 30],
+    [40, 50, 60],
+    [70, 80, 90]
+]
+myArray.fill_weight(weights)
+
+res = myArray.run(3)
+
+print(myArray.input)
+
+print(res)
 
 
 
